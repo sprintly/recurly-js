@@ -26,9 +26,9 @@ R.Subscription = {
 
     totals.stages.now = totals.plan.add(totals.allAddOns);
 
-    // FREE TRIAL 
+    // FREE TRIAL
     if(this.plan.trial) {
-      totals.stages.now = R.Cost.FREE; 
+      totals.stages.now = totals.allAddOns;
     }
 
     // COUPON
@@ -52,9 +52,10 @@ R.Subscription = {
 
     return totals;
   }
+
 , redeemAddOn: function(addOn) {
   var redemption = addOn.createRedemption();
-  this.addOns.push(redemption); 
+  this.addOns.push(redemption);
   return redemption;
 }
 
@@ -82,6 +83,10 @@ R.Subscription = {
     , currency: this.plan.currency
     , coupon_code: this.coupon ? this.coupon.code : undefined
     , add_ons: []
+    , trial_ends_at: this.trial_ends_at
+    , starts_at: this.starts_at
+    , total_billing_cycles: this.total_billing_cycles
+    , first_renewal_date: this.first_renewal_date
     };
 
     for(var i=0, l=this.addOns.length, a=json.add_ons, b=this.addOns; i < l; ++i) {
@@ -153,10 +158,10 @@ R.Coupon = {
   }
 };
 
-R.Cost.prototype.discount = function(coupon){ 
+R.Cost.prototype.discount = function(coupon){
   if(coupon.discountCost)
     return this.add(coupon.discountCost);
-  
+
   var ret = this.sub( this.mult(coupon.discountRatio) );
   if(ret.cents() < 0) {
     return R.Cost.FREE;
