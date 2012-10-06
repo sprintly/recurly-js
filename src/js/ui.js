@@ -64,12 +64,12 @@ function pullField($form, fieldSel, validations, onError) {
   var $input = $form.find(fieldSel + ' input');
 
   // Try as select
-  if($input.length == 0) {
+  if($input.length === 0) {
     $input = $form.find(fieldSel + ' select');
   }
 
   // Treat nonexistence as removed deliberately
-  if($input.length == 0) return undefined;
+  if($input.length === 0) return undefined;
 
   var val = $input.val();
 
@@ -299,7 +299,7 @@ function initBillingInfoForm($form, options) {
       if(!inSelectMode || prevCountry != country) {
         var manualVal = $state.find('input').val();
 
-        if(manualVal != undefined  && manualVal != '') {
+        if(manualVal !== undefined  && manualVal !== '') {
           state = matchKnownStateWithInput(country, manualVal);
 
           if(!state) return false;
@@ -337,8 +337,8 @@ function initBillingInfoForm($form, options) {
   // == GEOIP
   function niceSet($jq, v) {
     var cur = $jq.val();
-    if(!v || v == '') return false;
-    if(cur && cur != '' && cur != '-') return false;
+    if(!v || v === '') return false;
+    if(cur && cur !== '' && cur !== '-') return false;
 
     // workaround
     //
@@ -416,7 +416,7 @@ function initBillingInfoForm($form, options) {
     else {
       $monthSelect.find('option').removeAttr('disabled');
     }
-  };
+  }
   updateMonths();
   $yearSelect.change(updateMonths);
 
@@ -771,6 +771,9 @@ R.buildSubscriptionForm = function(options) {
     if(options.filterPlan)
       plan = options.filterPlan(plan) || plan;
 
+    if(options.subscription && options.subscription.quantity) {
+      plan.quantity = options.subscription.quantity;
+    }
 
     var subscription = plan.createSubscription(),
         account = R.Account.create(),
@@ -849,7 +852,7 @@ R.buildSubscriptionForm = function(options) {
           var addOn = plan.addOns[i];
 
           var classAttr = 'add_on add_on_'+ addOn.code + (i % 2 ? ' even' : ' odd');
-          if(i == 0) classAttr += ' first';
+          if(i === 0) classAttr += ' first';
           if(i == l-1) classAttr += ' last';
 
           var $addOn = $('<div class="'+classAttr+'">' +

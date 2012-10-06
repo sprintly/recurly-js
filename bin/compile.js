@@ -9,14 +9,16 @@ var fs = require('fs')
   , jade = require('jade')
   , async = require('async');
 
-var argParts = process.argv.slice(2).map(function(file) {
+var VERSION = '0';
+var HEADER = process.argv[2];
+var THEME = process.argv[3];
+
+var argParts = process.argv.slice(4).map(function(file) {
   if(file.match(/.*\.jade$/))
     return jadePart(file);
   else
     return jsPart(file);
 });
-
-var VERSION = '0';
 
 async.series([prepare].concat(headerPart).concat(argParts).concat(footerPart));
 
@@ -27,8 +29,9 @@ function prepare(done) {
 
 function headerPart(done) {
 
-  var header = fs.readFileSync('src/js/header.js') + '';
+  var header = fs.readFileSync('src/js/header_' + HEADER + '.js') + '';
   header = header.replace(/\{VERSION\}/,VERSION);
+  header = header.replace(/\{THEME\}/,THEME);
 
   process.stdout.write(
     header
@@ -37,21 +40,19 @@ function headerPart(done) {
   );
 
   done();
-};
+}
 
 function footerPart(done) {
-  process.stdout.write(
-    '\nwindow.Recurly = R;'
-  + '\n})(jQuery);'
-  );
+  var str = ((HEADER == 'recurly') ? '\nwindow.Recurly = R;' : '') + '\n})(jQuery);';
+  process.stdout.write(str);
   done();
-};
+}
 
 function jsPart(jsfile) {
   return function(done) {
     fs.readFile(jsfile, function(err, data){
       data = ('' + data).replace(/\{VERSION\}/,VERSION);
-      process.stdout.write(leader(jsfile) + data);
+      process.stdout.write(fileLeader(jsfile) + data);
       done();
     });
   };
@@ -59,13 +60,14 @@ function jsPart(jsfile) {
 
 function jadePart(jadefile) {
   return function(done) {
-    var key = jadefile.match('.*/(.+)\.jade$')[1];
-    var jadestr = fs.readFileSync(jadefile); 
+    var key = jadefile.match('.*/(.+)\\.jade$')[1];
+    var jadestr = fs.readFileSync(jadefile);
+    var arr = (HEADER == 'theme') ? 'Recurly' : 'R';
 
     jade.render(jadestr, {filename: jadefile}, function(err,html) {
       html = html.replace(/\n/g,'');
-      var jsstr = leader(jadefile);
-      jsstr += 'R.dom[\''+key+'\'] = \'' + html.replace(/\'/g,'\\\'') + '\';'
+      var jsstr = fileLeader(jadefile);
+      jsstr += arr + '.dom[\''+key+'\'] = \'' + html.replace(/\'/g,'\\\'') + '\';';
       process.stdout.write(jsstr);
       done();
 
@@ -74,7 +76,16 @@ function jadePart(jadefile) {
   };
 }
 
-function leader(file) {
+function themeLeader(done) {
+  var jsstr = '';
+  jsstr += "\n\n//////////////////////////////////////////////////\n";
+  jsstr += "// Theme " + THEME + "\n";
+  jsstr += "//////////////////////////////////////////////////\n\n";
+
+  return jsstr;
+}
+
+function fileLeader(file) {
   var jsstr = '';
   jsstr += "\n\n//////////////////////////////////////////////////\n";
   jsstr += "// Compiled from " + file + "\n";
