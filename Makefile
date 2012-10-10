@@ -51,11 +51,13 @@ build/recurly.min.js: build/recurly.js
 
 build/themes/%/theme.js: $(addprefix themes/$(THEME)/dom/, $(DOM_SOURCES))
 	mkdir -p $(@D)
-	$(COMPILER) theme $* $(addprefix themes/$*/dom/, $(DOM_SOURCES)) > build/themes/$*/theme.js
+	$(COMPILER) theme $* $(addprefix themes/$*/dom/, $(DOM_SOURCES)) > build/themes/$*/dom.js
 
 build/themes/%/recurly.css: themes/%/style/recurly.styl
 	mkdir -p $(@D)
-	$(STYLUS) $^ -o $(abspath $(@D))
+	# $(STYLUS) $^ -o $(abspath $(@D))
+	$(STYLUS) $^
+	cp -R $(dir $^) build/themes/$*/style
 
 clean:
 	rm -rf build
